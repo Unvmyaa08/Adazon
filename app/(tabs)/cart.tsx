@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Image, TouchableOpacity, View, SafeAreaView } from 'react-native';
-import { router } from 'expo-router';
+import { StyleSheet, ScrollView, Image, TouchableOpacity, View, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { getCart } from '@/components/GameChallenge';
+import { getCart, removeFromCart } from '@/components/GameAdPreview'; // Import removeFromCart
 
 export default function CartScreen() {
   const backgroundColor = useThemeColor({}, 'background');
@@ -17,6 +17,14 @@ export default function CartScreen() {
   const [cart, setCart] = useState(getCart());
   const [subtotal, setSubtotal] = useState(0);
   const [savings, setSavings] = useState(0);
+  
+  // This will refresh the cart data whenever the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // Get the latest cart data when the screen is focused
+      setCart(getCart());
+    }, [])
+  );
   
   useEffect(() => {
     // Calculate totals
@@ -50,6 +58,14 @@ export default function CartScreen() {
   // Format price for display
   const formatPrice = (price: number) => {
     return '$' + price.toFixed(2);
+  };
+  
+  // Handle removing an item from the cart
+  const removeItem = (index: number) => {
+    // Call the exported removeFromCart function
+    removeFromCart(index);
+    // Update the local state with the new cart data
+    setCart(getCart());
   };
   
   return (
@@ -89,24 +105,32 @@ export default function CartScreen() {
               
               return (
                 <ThemedView key={index} style={[styles.cartItem, { borderBottomColor: borderColor }]}>
-                  <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
+                  {/* Fixed image rendering to handle both require() and URI image sources */}
+                  <Image 
+                    source={
+                      typeof item.imageUrl === 'string' 
+                        ? { uri: item.imageUrl } 
+                        : item.imageUrl
+                    } 
+                    style={styles.itemImage} 
+                  />
                   <ThemedView style={styles.itemDetails}>
                     <ThemedText numberOfLines={2} style={styles.itemTitle}>{item.title}</ThemedText>
-                    <ThemedView style={styles.priceContainer}>
+                    <View style={styles.priceContainer}>
                       <ThemedText style={styles.itemPrice}>{formatPrice(finalPrice)}</ThemedText>
                       {itemDiscount && (
                         <ThemedText style={styles.originalPrice}>{item.price}</ThemedText>
                       )}
-                    </ThemedView>
+                    </View>
                     {itemDiscount && (
-                      <ThemedView style={styles.savingsBadge}>
+                      <View style={styles.savingsBadge}>
                         <ThemedText style={styles.savingsText}>
-                          You save {itemDiscount.percent}% with Game Challenge!
+                          Save {itemDiscount.percent}% with Game Challenge!
                         </ThemedText>
-                      </ThemedView>
+                      </View>
                     )}
-                    <ThemedView style={styles.itemActions}>
-                      <ThemedView style={styles.quantitySelector}>
+                    <View style={styles.itemActions}>
+                      <View style={styles.quantitySelector}>
                         <TouchableOpacity style={styles.quantityButton}>
                           <Ionicons name="remove" size={18} color={tintColor} />
                         </TouchableOpacity>
@@ -114,11 +138,14 @@ export default function CartScreen() {
                         <TouchableOpacity style={styles.quantityButton}>
                           <Ionicons name="add" size={18} color={tintColor} />
                         </TouchableOpacity>
-                      </ThemedView>
-                      <TouchableOpacity style={styles.deleteButton}>
+                      </View>
+                      <TouchableOpacity 
+                        style={styles.deleteButton}
+                        onPress={() => removeItem(index)}
+                      >
                         <ThemedText style={styles.deleteText}>Delete</ThemedText>
                       </TouchableOpacity>
-                    </ThemedView>
+                    </View>
                   </ThemedView>
                 </ThemedView>
               );
@@ -127,22 +154,22 @@ export default function CartScreen() {
           
           {/* Order Summary */}
           <ThemedView style={[styles.orderSummary, { borderTopColor: borderColor }]}>
-            <ThemedView style={styles.summaryRow}>
+            <View style={styles.summaryRow}>
               <ThemedText style={styles.summaryLabel}>Subtotal ({cart.items.length} items):</ThemedText>
               <ThemedText style={styles.summaryValue}>{formatPrice(subtotal)}</ThemedText>
-            </ThemedView>
+            </View>
             
             {savings > 0 && (
-              <ThemedView style={styles.summaryRow}>
+              <View style={styles.summaryRow}>
                 <ThemedText style={styles.savingsLabel}>Game Challenge Savings:</ThemedText>
                 <ThemedText style={styles.savingsValue}>-{formatPrice(savings)}</ThemedText>
-              </ThemedView>
+              </View>
             )}
             
-            <ThemedView style={styles.summaryRow}>
+            <View style={styles.summaryRow}>
               <ThemedText style={styles.totalLabel}>Total:</ThemedText>
               <ThemedText style={styles.totalValue}>{formatPrice(subtotal - savings)}</ThemedText>
-            </ThemedView>
+            </View>
             
             <TouchableOpacity 
               style={[styles.checkoutButton, { backgroundColor: tintColor }]}
@@ -162,15 +189,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderBottomWidth: 1,
+    backgroundColor: '#fff',
+    // Added shadow for depth
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   backButton: {
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   emptyCartContainer: {
@@ -186,7 +220,7 @@ const styles = StyleSheet.create({
   continueShoppingButton: {
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 4,
+    borderRadius: 25,
     marginTop: 10,
   },
   continueShoppingText: {
@@ -197,15 +231,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 15,
     borderBottomWidth: 1,
+    backgroundColor: '#fff',
+    marginHorizontal: 10,
+    marginVertical: 5,
+    borderRadius: 10,
+    // Subtle shadow for a card-like feel
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   itemImage: {
     width: 100,
     height: 100,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   itemDetails: {
     flex: 1,
     marginLeft: 15,
+    justifyContent: 'space-between',
   },
   itemTitle: {
     fontSize: 16,
@@ -227,10 +271,10 @@ const styles = StyleSheet.create({
     color: '#565959',
   },
   savingsBadge: {
-    backgroundColor: '#013087',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 3,
+    backgroundColor: '#0a74da',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
     alignSelf: 'flex-start',
     marginBottom: 8,
   },
@@ -243,70 +287,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 5,
   },
   quantitySelector: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 3,
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   quantityButton: {
-    padding: 5,
+    padding: 8,
   },
   quantityText: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     fontWeight: 'bold',
   },
   deleteButton: {
-    padding: 5,
+    padding: 8,
   },
   deleteText: {
     color: '#007185',
   },
   orderSummary: {
-    padding: 15,
+    padding: 20,
     borderTopWidth: 1,
+    backgroundColor: '#fff',
+    // Add a subtle top shadow
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: -2 },
+    elevation: 3,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   summaryLabel: {
-    fontSize: 14,
+    fontSize: 16,
   },
   summaryValue: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   savingsLabel: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#067D62',
   },
   savingsValue: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#067D62',
   },
   totalLabel: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   totalValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   checkoutButton: {
-    padding: 15,
-    borderRadius: 4,
+    paddingVertical: 15,
+    borderRadius: 30,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 15,
   },
   checkoutButtonText: {
     color: '#FFF',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
   },
 });

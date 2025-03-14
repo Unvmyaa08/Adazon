@@ -1,133 +1,71 @@
-import React, { useState } from 'react';
-import { View, ScrollView, Image, StyleSheet, TouchableOpacity, Dimensions, Modal, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, Image, StyleSheet, TouchableOpacity, Modal, SafeAreaView, Pressable, Platform, StatusBar } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
-import { GameChallenge } from '@/components/GameChallenge';
-import { useLocalSearchParams, router } from 'expo-router';
-
-// Types
-interface Product {
-  id: string;
-  imageUrl: string;
-  title: string;
-  price: string;
-  originalPrice?: string;
-  discount?: string;
-  rating?: number;
-  reviewCount?: number;
-  prime?: boolean;
-}
-
-// Game challenge options
-const GAME_RECOMMENDATIONS = [
-  {
-    id: 'rec1',
-    imageUrl: 'https://images.unsplash.com/photo-1628891890467-b79f2c8ba9dc?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-    title: 'NFL Team Logo Hat',
-    price: '$24.99',
-    originalPrice: '$34.99',
-    discount: '29%'
-  },
-  {
-    id: 'rec2',
-    imageUrl: 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-    title: 'Game Day Cap',
-    price: '$29.99',
-    originalPrice: '$39.99',
-    discount: '25%'
-  },
-  {
-    id: 'rec3',
-    imageUrl: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-    title: 'Team Football',
-    price: '$39.99',
-    originalPrice: '$59.99',
-    discount: '33%'
-  }
-];
-
-// Product images for the gallery
-const PRODUCT_IMAGES = [
-  'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80&fit=facearea&facepad=20',
-  'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80&sat=-100',
-  'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80&flip=h',
-];
-
-// Similar products recommendations
-const SIMILAR_PRODUCTS = [
-  {
-    id: 'sim1',
-    imageUrl: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-    title: 'NFL Team Sweatshirt - Premium',
-    price: '$49.99',
-    rating: 4.3,
-    reviewCount: 2145,
-    prime: true
-  },
-  {
-    id: 'sim2',
-    imageUrl: 'https://images.unsplash.com/photo-1587868578665-ec799bfe592e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-    title: 'NFL Team Beanie - Cold Weather Edition',
-    price: '$24.99',
-    rating: 4.5,
-    reviewCount: 876,
-    prime: true
-  },
-  {
-    id: 'sim3',
-    imageUrl: 'https://images.unsplash.com/photo-1621604474214-a64b3d182e4d?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-    title: 'NFL Autographed Mini Helmet - Collectible',
-    price: '$159.99',
-    rating: 4.8,
-    reviewCount: 456,
-    prime: true
-  },
-];
+import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams, router, useNavigation } from 'expo-router';
+import GameAdPreview from '@/components/GameAdPreview';
+import { products, Product } from '@/constants/product_data';
 
 export default function ProductScreen() {
-  // Get the product ID from the URL params
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
+
   const params = useLocalSearchParams();
-  
-  // Create a product object from URL params
-  const product = {
-    id: params.id as string,
-    imageUrl: params.imageUrl as string,
+  const productId = params.id as string;
+
+  // Get the product from the products object using the ID from params
+  const product = products[productId] || {
+    id: productId,
     title: params.title as string,
     price: params.price as string,
     originalPrice: params.originalPrice as string,
     discount: params.discount as string,
     rating: parseFloat(params.rating as string),
     reviewCount: parseInt(params.reviewCount as string),
+    apparel: params.apparel === 'true',
     prime: params.prime === 'true',
+    imageUrl: null
   };
-  
+
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({}, 'border');
-  
+  const cardBackgroundColor = useThemeColor({}, 'cardBackground');
+
   const [currentImage, setCurrentImage] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  
+  const [selectedSize, setSelectedSize] = useState('M');
+
+  // Available sizes
+  const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
   // Open game challenge modal
   const openGameChallenge = () => {
     setModalVisible(true);
   };
-  
+
   // Close modal
   const closeModal = () => {
     setModalVisible(false);
   };
-  
+
   // Navigate back
   const goBack = () => {
     router.back();
   };
-  
+
+  // Change quantity
+  const changeQuantity = (delta: number) => {
+    setQuantity(Math.max(1, quantity + delta));
+  };
+
   // Render star rating
   const renderStars = (rating = 0, size = 16) => {
     return (
@@ -144,7 +82,7 @@ export default function ProductScreen() {
       </View>
     );
   };
-  
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor }}>
       {/* Header */}
@@ -152,12 +90,12 @@ export default function ProductScreen() {
         <TouchableOpacity onPress={goBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        
+
         <ThemedView style={styles.searchBar}>
           <Ionicons name="search" size={20} color="#777" style={styles.searchIcon} />
           <ThemedText style={styles.searchText}>Search NFL Shop</ThemedText>
         </ThemedView>
-        
+
         <TouchableOpacity style={styles.cartButton}>
           <Ionicons name="cart-outline" size={24} color={textColor} />
           <View style={styles.cartBadge}>
@@ -165,42 +103,39 @@ export default function ProductScreen() {
           </View>
         </TouchableOpacity>
       </ThemedView>
-      
+
       <ScrollView style={{ backgroundColor }} showsVerticalScrollIndicator={false}>
         {/* Product Images */}
         <ThemedView style={styles.imageGallery}>
           <Image
-            source={{ uri: PRODUCT_IMAGES[currentImage] }}
+            source={product.imageUrl}
             style={styles.mainImage}
             resizeMode="contain"
           />
-          {/* Image selector */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.thumbnailScroll}>
-            {PRODUCT_IMAGES.map((image, index) => (
-              <TouchableOpacity 
-                key={index}
-                onPress={() => setCurrentImage(index)}
+
+          {/* Image Dots Indicator */}
+          <View style={styles.imageDots}>
+            {[0, 1, 2, 3].map((dot) => (
+              <View
+                key={dot}
                 style={[
-                  styles.thumbnail,
-                  { borderColor: currentImage === index ? '#FF9900' : borderColor },
-                  currentImage === index && styles.selectedThumbnail
+                  styles.dot,
+                  dot === currentImage ? { backgroundColor: tintColor, width: 8 } : { backgroundColor: borderColor }
                 ]}
-              >
-                <Image source={{ uri: image }} style={styles.thumbnailImage} />
-              </TouchableOpacity>
+              />
             ))}
-          </ScrollView>
+          </View>
         </ThemedView>
-        
+
         {/* Product Info Section */}
         <ThemedView style={styles.productInfo}>
           <ThemedText style={styles.title}>{product.title}</ThemedText>
-          
+
           {/* Brand & Rating */}
           <TouchableOpacity style={styles.brandContainer}>
             <ThemedText style={styles.brand}>Visit the Official NFL Store</ThemedText>
           </TouchableOpacity>
-          
+
           <ThemedView style={styles.ratingContainer}>
             {renderStars(product.rating)}
             <TouchableOpacity>
@@ -209,35 +144,46 @@ export default function ProductScreen() {
               </ThemedText>
             </TouchableOpacity>
           </ThemedView>
-          
+
           {/* Amazon's Choice & Earn Button */}
           <ThemedView style={styles.badgeRow}>
+            {/* Fixed Amazon's Choice Badge */}
             <View style={styles.amazonChoiceBadge}>
-              <ThemedText style={styles.amazonChoiceText}>Amazon's <ThemedText style={{ fontWeight: 'bold' }}>Choice</ThemedText></ThemedText>
+              <View style={styles.amazonChoiceTop}>
+                <FontAwesome5 name="amazon" size={14} color="#FFF" style={styles.amazonIcon} />
+                <ThemedText style={styles.amazonChoiceText}>
+                  Amazon's <ThemedText style={styles.amazonChoiceBold}>Choice</ThemedText>
+                </ThemedText>
+              </View>
+              <View style={styles.amazonChoiceBottom}>
+                <ThemedText style={styles.amazonChoiceSubtext}>for "NFL Team Jersey"</ThemedText>
+              </View>
             </View>
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.earnButton}
               onPress={openGameChallenge}
             >
-              <ThemedText style={styles.earnButtonText}>Earn</ThemedText>
+              <ThemedText style={styles.earnButtonText}>Earn 15% Off</ThemedText>
             </TouchableOpacity>
           </ThemedView>
-          
+
           {/* Price */}
           <ThemedView style={styles.priceContainer}>
             <ThemedText style={styles.priceText}>
               <ThemedText style={styles.priceSymbol}>$</ThemedText>
               <ThemedText style={styles.price}>{product.price.substring(1)}</ThemedText>
             </ThemedText>
-            
+
             {product.originalPrice && (
               <ThemedView style={styles.originalPriceContainer}>
                 <ThemedText style={styles.listPriceText}>List Price: </ThemedText>
                 <ThemedText style={styles.originalPrice}>{product.originalPrice}</ThemedText>
+                <ThemedText style={styles.saveText}> Save {product.discount}</ThemedText>
               </ThemedView>
             )}
           </ThemedView>
-          
+
           {/* Prime */}
           {product.prime && (
             <ThemedView style={styles.primeContainer}>
@@ -245,13 +191,148 @@ export default function ProductScreen() {
               <ThemedText style={styles.primeText}>prime</ThemedText>
             </ThemedView>
           )}
-          
+
           <ThemedText style={styles.deliveryText}>
-            FREE delivery <ThemedText style={{ fontWeight: 'bold' }}>Tomorrow</ThemedText> if you order within 
+            FREE delivery <ThemedText style={{ fontWeight: 'bold' }}>Tomorrow</ThemedText> if you order within
             <ThemedText style={{ fontWeight: 'bold' }}> 12 hrs 45 mins</ThemedText>
           </ThemedText>
+
+          {/* In Stock */}
+          <ThemedText style={styles.inStockText}>In Stock</ThemedText>
+
+          {product.apparel && (
+            <ThemedView style={styles.sizeSection}>
+              <ThemedText style={styles.sectionTitle}>
+                Size: <ThemedText style={styles.selectedSizeText}>{selectedSize}</ThemedText>
+              </ThemedText>
+              <View style={styles.sizeContainer}>
+                {sizes.map(size => (
+                  <TouchableOpacity
+                    key={size}
+                    style={[
+                      styles.sizeBox,
+                      { borderColor: borderColor },
+                      selectedSize === size && { borderColor: tintColor, borderWidth: 2 }
+                    ]}
+                    onPress={() => setSelectedSize(size)}
+                  >
+                    <ThemedText style={[
+                      styles.sizeText,
+                      selectedSize === size && { color: tintColor, fontWeight: 'bold' }
+                    ]}>
+                      {size}
+                    </ThemedText>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ThemedView>
+          )}
+
+
+          {/* Quantity Selector */}
+          <ThemedView style={styles.quantitySection}>
+            <ThemedText style={styles.sectionTitle}>Quantity:</ThemedText>
+            <View style={styles.quantitySelector}>
+              <TouchableOpacity
+                style={[styles.quantityButton, { borderColor }]}
+                onPress={() => changeQuantity(-1)}
+                disabled={quantity <= 1}
+              >
+                <ThemedText style={[styles.quantityButtonText, quantity <= 1 && { opacity: 0.5 }]}>−</ThemedText>
+              </TouchableOpacity>
+              <ThemedView style={[styles.quantityValue, { borderColor }]}>
+                <ThemedText>{quantity}</ThemedText>
+              </ThemedView>
+              <TouchableOpacity
+                style={[styles.quantityButton, { borderColor }]}
+                onPress={() => changeQuantity(1)}
+              >
+                <ThemedText style={styles.quantityButtonText}>+</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </ThemedView>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={[styles.addToCartButton, { backgroundColor: '#FFD814' }]}>
+              <ThemedText style={styles.addToCartText}>Add to Cart</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.buyNowButton, { backgroundColor: '#FFA41C' }]}>
+              <ThemedText style={styles.buyNowText}>Buy Now</ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Quick Links Section */}
+          <View style={[styles.quickLinks, { borderColor }]}>
+            <TouchableOpacity style={styles.quickLink}>
+              <ThemedText style={styles.quickLinkText}>Share</ThemedText>
+              <MaterialIcons name="share" size={18} color="#007185" />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: borderColor }]} />
+
+            <TouchableOpacity style={styles.quickLink}>
+              <ThemedText style={styles.quickLinkText}>Add to List</ThemedText>
+              <Ionicons name="list" size={18} color="#007185" />
+            </TouchableOpacity>
+          </View>
         </ThemedView>
-        
+
+        {/* Product Details Section */}
+        <ThemedView style={[styles.detailsSection, { borderTopColor: borderColor, borderBottomColor: borderColor }]}>
+          <ThemedText style={styles.detailsTitle}>Product details</ThemedText>
+
+          <View style={styles.detailItem}>
+            <ThemedText style={styles.detailBullet}>•</ThemedText>
+            <ThemedText style={styles.detailText}>100% Polyester</ThemedText>
+          </View>
+
+          <View style={styles.detailItem}>
+            <ThemedText style={styles.detailBullet}>•</ThemedText>
+            <ThemedText style={styles.detailText}>Imported, machine washable</ThemedText>
+          </View>
+
+          <View style={styles.detailItem}>
+            <ThemedText style={styles.detailBullet}>•</ThemedText>
+            <ThemedText style={styles.detailText}>Official licensed product with team colors and logo</ThemedText>
+          </View>
+
+          <View style={styles.detailItem}>
+            <ThemedText style={styles.detailBullet}>•</ThemedText>
+            <ThemedText style={styles.detailText}>Perfect for game day or everyday wear</ThemedText>
+          </View>
+
+          <TouchableOpacity style={styles.seeMore}>
+            <ThemedText style={styles.seeMoreText}>See more product details</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+
+        {/* Customer Reviews Section Preview */}
+        <ThemedView style={[styles.reviewsSection, { borderBottomColor: borderColor }]}>
+          <View style={styles.reviewsHeader}>
+            <ThemedText style={styles.sectionTitle}>Customer reviews</ThemedText>
+            <TouchableOpacity>
+              <ThemedText style={styles.seeAllText}>See all reviews</ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.overallRating}>
+            {renderStars(product.rating, 20)}
+            <ThemedText style={styles.overallRatingText}>
+              {product.rating?.toFixed(1)} out of 5
+            </ThemedText>
+          </View>
+
+          <ThemedText style={styles.totalReviewsText}>
+            {product.reviewCount?.toLocaleString()} global ratings
+          </ThemedText>
+
+          <TouchableOpacity style={[styles.reviewButton, { borderColor }]}>
+            <ThemedText style={styles.reviewButtonText}>Write a review</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+
         {/* Game challenge modal */}
         <Modal
           animationType="slide"
@@ -261,37 +342,35 @@ export default function ProductScreen() {
         >
           <View style={styles.modalOverlay}>
             <View style={[styles.modalContent, { backgroundColor }]}>
-              <View style={styles.modalHeader}>
+              <View style={[styles.modalHeader, { borderBottomColor: borderColor }]}>
+                <ThemedText style={styles.modalTitle}>Earn 15% Discount</ThemedText>
                 <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
                   <Ionicons name="close" size={24} color={textColor} />
                 </TouchableOpacity>
-                <ThemedText style={styles.modalTitle}>NFL Game Challenge</ThemedText>
-                <View style={{ width: 24 }} />
               </View>
-              
-              <View style={styles.selectedProductContainer}>
-                <Image 
-                  source={{ uri: product.imageUrl }} 
-                  style={styles.selectedProductImage} 
-                />
-                <View style={styles.selectedProductInfo}>
-                  <ThemedText numberOfLines={2} style={styles.selectedProductTitle}>
-                    {product.title}
+
+              <ScrollView
+                style={styles.modalScrollView}
+                contentContainerStyle={styles.modalScrollContent}
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.challengeIntro}>
+                  <ThemedText style={styles.challengeIntroTitle}>
+                    Test your NFL knowledge to unlock a special discount!
                   </ThemedText>
-                  <ThemedText style={styles.selectedProductPrice}>
-                    {product.price}
+                  <ThemedText style={styles.challengeIntroSubtitle}>
+                    Answer correctly to receive 15% off your purchase
                   </ThemedText>
                 </View>
-              </View>
-              
-              <GameChallenge 
-                gameOptions={GAME_RECOMMENDATIONS}
-                onComplete={() => {
-                  setTimeout(() => {
-                    closeModal();
-                  }, 5000);
-                }}
-              />
+
+                <View style={styles.gameAdWrapper}>
+                  <GameAdPreview product={product} />
+                </View>
+
+                <ThemedText style={styles.termsText}>
+                  Offer valid for this purchase only. Cannot be combined with other promotions.
+                </ThemedText>
+              </ScrollView>
             </View>
           </View>
         </Modal>
@@ -304,8 +383,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    padding: 8,
     borderBottomWidth: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   backButton: {
     padding: 8,
@@ -346,6 +426,41 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
+  // Fixed Amazon's Choice Badge styles
+  amazonChoiceBadge: {
+    borderRadius: 3,
+    overflow: 'hidden',
+    alignSelf: 'flex-start', // Important: This makes badge take only needed width
+    minWidth: 130, // Give it a minimum width to look properly proportioned
+  },
+  amazonChoiceTop: {
+    backgroundColor: '#232F3E',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  amazonChoiceBottom: {
+    backgroundColor: '#5a95dc',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  amazonChoiceText: {
+    color: '#FFF',
+    fontSize: 12,
+  },
+  amazonChoiceBold: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  amazonChoiceSubtext: {
+    color: '#FFF',
+    fontSize: 10,
+  },
+  amazonIcon: {
+    marginRight: 4,
+  },
   imageGallery: {
     padding: 10,
   },
@@ -354,23 +469,17 @@ const styles = StyleSheet.create({
     height: 300,
     marginBottom: 10,
   },
-  thumbnailScroll: {
+  imageDots: {
     flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 20,
   },
-  thumbnail: {
-    width: 60,
-    height: 60,
-    marginRight: 8,
-    borderWidth: 1,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  selectedThumbnail: {
-    borderWidth: 2,
-  },
-  thumbnailImage: {
-    width: '100%',
-    height: '100%',
+  dot: {
+    height: 6,
+    width: 6,
+    borderRadius: 3,
+    marginHorizontal: 3,
   },
   productInfo: {
     padding: 15,
@@ -402,25 +511,16 @@ const styles = StyleSheet.create({
   },
   badgeRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start', // Align items at top
     marginBottom: 12,
-  },
-  amazonChoiceBadge: {
-    backgroundColor: '#232F3E',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 3,
-  },
-  amazonChoiceText: {
-    color: '#FFF',
-    fontSize: 12,
+    justifyContent: 'space-between', // Space between the badges
   },
   earnButton: {
     backgroundColor: '#013087',
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6, // Slightly increased vertical padding
     borderRadius: 3,
-    marginLeft: 10,
+    alignSelf: 'flex-start', // Make it only as wide as needed
   },
   earnButtonText: {
     color: '#FFF',
@@ -456,6 +556,10 @@ const styles = StyleSheet.create({
     color: '#565959',
     textDecorationLine: 'line-through',
   },
+  saveText: {
+    fontSize: 14,
+    color: '#CC0C39',
+  },
   primeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -470,17 +574,196 @@ const styles = StyleSheet.create({
   deliveryText: {
     fontSize: 14,
     lineHeight: 20,
+    marginBottom: 8,
+  },
+  inStockText: {
+    fontSize: 16,
+    color: '#007600',
+    fontWeight: '500',
+    marginBottom: 12,
+  },
+  sizeSection: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  selectedSizeText: {
+    fontWeight: 'bold',
+  },
+  sizeContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 5,
+  },
+  sizeBox: {
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    marginBottom: 8,
+    minWidth: 45,
+    alignItems: 'center',
+  },
+  sizeText: {
+    fontSize: 14,
+  },
+  quantitySection: {
+    marginBottom: 16,
+  },
+  quantitySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  quantityButton: {
+    borderWidth: 1,
+    borderRadius: 4,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quantityButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  quantityValue: {
+    borderWidth: 1,
+    borderRadius: 4,
+    height: 36,
+    minWidth: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  actionButtons: {
+    marginBottom: 16,
+  },
+  addToCartButton: {
+    borderRadius: 50,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  addToCartText: {
+    color: '#111',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  buyNowButton: {
+    borderRadius: 50,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  buyNowText: {
+    color: '#111',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  quickLinks: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+  quickLink: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickLinkText: {
+    color: '#007185',
+    marginRight: 6,
+  },
+  divider: {
+    width: 1,
+    height: '100%',
+  },
+  detailsSection: {
+    padding: 15,
+    borderTopWidth: 8,
+    borderBottomWidth: 8,
+  },
+  detailsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  detailBullet: {
+    marginRight: 8,
+    fontSize: 16,
+  },
+  detailText: {
+    fontSize: 14,
+    flex: 1,
+    lineHeight: 20,
+  },
+  seeMore: {
+    marginTop: 6,
+  },
+  seeMoreText: {
+    color: '#007185',
+    fontSize: 14,
+  },
+  reviewsSection: {
+    padding: 15,
+    borderBottomWidth: 8,
+  },
+  reviewsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  seeAllText: {
+    color: '#007185',
+    fontSize: 14,
+  },
+  overallRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  overallRatingText: {
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  totalReviewsText: {
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  reviewButton: {
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  reviewButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 16,
   },
   modalContent: {
-    width: '90%',
-    maxHeight: '80%',
-    borderRadius: 8,
+    width: '100%',
+    maxHeight: '90%',
+    borderRadius: 16,
     overflow: 'hidden',
     elevation: 5,
     shadowColor: '#000',
@@ -492,41 +775,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  closeButton: {
-    padding: 5,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
-  selectedProductContainer: {
-    flexDirection: 'row',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+  closeButton: {
+    padding: 4,
   },
-  selectedProductImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 4,
+  modalScrollView: {
+    width: '100%',
   },
-  selectedProductInfo: {
-    flex: 1,
-    marginLeft: 15,
-    justifyContent: 'center',
+  modalScrollContent: {
+    paddingBottom: 24,
+    alignItems: 'center',
   },
-  selectedProductTitle: {
+  challengeIntro: {
+    padding: 16,
+    width: '100%',
+    alignItems: 'center',
+  },
+  challengeIntroTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
+    textAlign: 'center',
+    marginBottom: 8,
   },
-  selectedProductPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#013087',
+  challengeIntroSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  gameAdWrapper: {
+    marginVertical: 16,
+    alignItems: 'center',
+    width: '100%',
+  },
+  termsText: {
+    fontSize: 12,
+    textAlign: 'center',
+    opacity: 0.6,
+    paddingHorizontal: 24,
+    marginTop: 8,
   },
 });

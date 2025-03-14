@@ -1,17 +1,15 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableWithoutFeedback, 
+import React, { useState, useRef, useMemo, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableWithoutFeedback,
   Animated,
   Easing,
-  Platform, 
-  Vibration, 
+  Platform,
+  Vibration,
   Dimensions
 } from 'react-native';
-import { useVideoPlayer, VideoView, VideoSource } from 'expo-video';
-import { useEvent } from 'expo';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
@@ -22,186 +20,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { Ionicons, FontAwesome5} from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import GameAdPreview from '@/components/GameAdPreview';
 
-const assetId = require('@/assets/videos/toaster_preview.mp4');
-const videoSource: VideoSource = {
-  assetId,
-  metadata: {
-    title: 'Luxury Watch Collection',
-    artist: 'LUXE WATCH'
-  }
-};
-
-const VideoAd: React.FC = () => {
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
-  const [adCompleted, setAdCompleted] = useState(false);
-  const [muted, setMuted] = useState(true);
-
-  // Animation for the CTA button
-  const ctaAnim = useRef(new Animated.Value(0)).current;
-
-  // Create video player using the hook
-  const player = useVideoPlayer(videoSource, (player) => {
-    player.muted = muted;
-    player.loop = true;
-    player.timeUpdateEventInterval = 0.5; // Update every half second
-    player.play();
-  });
-
-  // Watch for time updates to trigger CTA animation
-  const { currentTime } = useEvent(player, 'timeUpdate', {
-    currentTime: 0.0,
-    currentLiveTimestamp: null,
-    currentOffsetFromLive: null,
-    bufferedPosition: 0
-  });
-  
-  // Show CTA after video plays for a few seconds
-  useEffect(() => {
-    if (currentTime > 3 && !adCompleted) {
-      Animated.spring(ctaAnim, {
-        toValue: 1,
-        friction: 8,
-        tension: 40,
-        useNativeDriver: true,
-      }).start();
-      setAdCompleted(true);
-    }
-  }, [currentTime, adCompleted, ctaAnim]);
-
-  // Keep player muted state in sync with component state
-  useEffect(() => {
-    player.muted = muted;
-  }, [muted, player]);
-
-  const toggleMute = useCallback(() => {
-    setMuted(!muted);
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch (e) {
-        Vibration.vibrate(20);
-      }
-    }
-  }, [muted]);
-
-  const handleShopNow = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } catch (e) {
-        Vibration.vibrate([0, 50, 30, 100]);
-      }
-    }
-  }, []);
-
-  return (
-    <View style={[styles.videoAdContainer, { backgroundColor: theme.cardBackground }]}>
-      {/* Ad Header */}
-      <View style={styles.adHeader}>
-        <View style={styles.adBadgeRow}>
-          <Ionicons name="cart" size={16} color={theme.tint} />
-          <Text style={[styles.adHeaderText, { color: theme.text }]}>
-            Featured Product
-          </Text>
-          <View style={[styles.sponsoredBadge, { backgroundColor: theme.tint + '20' }]}>
-            <Text style={[styles.sponsoredText, { color: theme.tint }]}>Sponsored</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Video Player */}
-      <View style={styles.videoContainer}>
-        <VideoView
-          player={player}
-          style={styles.video}
-          contentFit="contain"
-          nativeControls={false}
-        />
-
-        {/* Overlay controls */}
-        <View style={styles.videoControls}>
-          <TouchableWithoutFeedback onPress={toggleMute}>
-            <View style={styles.muteButton}>
-              <Ionicons
-                name={muted ? "volume-mute" : "volume-medium"}
-                size={20}
-                color="white"
-              />
-            </View>
-          </TouchableWithoutFeedback>
-
-          <View style={styles.brandMark}>
-            <Text style={styles.brandText}>TOASTER OVEN</Text>
-          </View>
-        </View>
-
-        {/* CTA Button */}
-        <Animated.View
-          style={[
-            styles.ctaContainer,
-            {
-              opacity: ctaAnim,
-              transform: [
-                {
-                  translateY: ctaAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [20, 0]
-                  })
-                }
-              ]
-            }
-          ]}
-        >
-          <TouchableWithoutFeedback onPress={handleShopNow}>
-            <LinearGradient
-              colors={['#FF9900', '#F05D23']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.ctaButton}
-            >
-              <Text style={styles.ctaText}>Shop Now</Text>
-              <Ionicons name="arrow-forward" size={16} color="white" style={styles.ctaIcon} />
-            </LinearGradient>
-          </TouchableWithoutFeedback>
-        </Animated.View>
-      </View>
-
-      {/* Product Information */}
-      <View style={styles.productInfoContainer}>
-        <Text style={[styles.productTitle, { color: theme.text }]}>
-          Chronograph Master Collection
-        </Text>
-        <View style={styles.priceRow}>
-          <Text style={[styles.priceText, { color: theme.error }]}>$1,249.99</Text>
-          <Text style={[styles.originalPrice, { color: theme.icon }]}>$1,899.99</Text>
-          <View style={[styles.discountBadge, { backgroundColor: theme.error }]}>
-            <Text style={styles.discountText}>34% OFF</Text>
-          </View>
-        </View>
-        <View style={styles.ratingContainer}>
-          <View style={styles.stars}>
-            {[1, 2, 3, 4, 5].map(i => (
-              <Ionicons
-                key={i}
-                name={i <= 4 ? "star" : "star-half"}
-                size={16}
-                color="#FFB900"
-                style={{ marginRight: 2 }}
-              />
-            ))}
-          </View>
-          <Text style={[styles.ratingText, { color: theme.icon }]}>4.5 (2,384)</Text>
-        </View>
-        <Text style={[styles.deliveryText, { color: theme.success }]}>
-          <Ionicons name="checkmark-circle" size={14} color={theme.success} /> Free Prime Delivery
-        </Text>
-      </View>
-    </View>
-  );
-};
 // Prevent the splash screen from auto-hiding before assets are loaded.
 SplashScreen.preventAutoHideAsync();
 
@@ -595,106 +416,6 @@ const AnimatedMetric: React.FC<{
   );
 };
 
-// Mini demo component showing interactive "Add to Cart" functionality
-const InteractiveDemo: React.FC = () => {
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
-  const [tapped, setTapped] = useState(false);
-  const bounceAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Subtle bounce animation to draw attention
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounceAnim, {
-          toValue: 1,
-          duration: 1500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounceAnim, {
-          toValue: 0,
-          duration: 1500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
-
-  const handleTap = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch (e) {
-        // Fallback to Vibration API
-        Vibration.vibrate(20);
-      }
-    }
-
-    setTapped(prev => !prev);
-  }, []);
-
-  return (
-    <PulseEffect delay={1500}>
-      <TouchableWithoutFeedback onPress={handleTap}>
-        <Animated.View
-          style={[
-            styles.demoContainer,
-            {
-              backgroundColor: theme.cardBackground,
-              transform: [
-                {
-                  translateY: bounceAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -4]
-                  })
-                }
-              ]
-            }
-          ]}
-        >
-          <View style={styles.demoHeader}>
-            <Ionicons name="cart" size={16} color={theme.tint} />
-            <Text style={[styles.demoTitle, { color: theme.text }]}>
-              Try Interactive Ad
-            </Text>
-          </View>
-
-          <View style={styles.demoContent}>
-            {!tapped ? (
-              <>
-                <Text style={[styles.demoText, { color: theme.text }]}>
-                  Tap to add to cart
-                </Text>
-                <Animated.View
-                  style={{
-                    marginTop: 12,
-                    transform: [{
-                      scale: bounceAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [1, 1.2]
-                      })
-                    }]
-                  }}
-                >
-                  <Ionicons name="add-circle" size={24} color={theme.tint} />
-                </Animated.View>
-              </>
-            ) : (
-              <>
-                <Text style={[styles.demoText, { color: theme.success }]}>
-                  Added to Cart!
-                </Text>
-                <Ionicons name="checkmark-circle" size={24} color={theme.success} style={{ marginTop: 8 }} />
-              </>
-            )}
-          </View>
-        </Animated.View>
-      </TouchableWithoutFeedback>
-    </PulseEffect>
-  );
-};
 
 // Button with enhanced feedback
 const AnimatedButton: React.FC<{
@@ -860,11 +581,11 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
             </Text>
           </Animated.View>
 
-          {/* Interactive demo section */}
+          {/* Interactive demo section
           <View style={styles.demoSection}>
-            <InteractiveDemo />
             <VideoAd />
-          </View>
+            <GameAdPreview/>
+          </View> */}
 
           {/* Key metrics section */}
           <View style={styles.metricsContainer}>
@@ -891,79 +612,82 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
             />
           </View>
 
-          {/* Features section */}
           <View style={styles.featuresContainer}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
               Why Adazon Works
             </Text>
 
             <View style={styles.featuresList}>
+              {/* Gamification Feature */}
               <View style={styles.featureItem}>
                 <LinearGradient
                   colors={[theme.tint + '30', theme.tint + '10']}
                   style={styles.featureIconBg}
                 >
-                  <Ionicons name="cart" size={24} color={theme.tint} />
+                  <Ionicons name="game-controller" size={24} color={theme.tint} />
                 </LinearGradient>
                 <View style={styles.featureTextContainer}>
                   <Text style={[styles.featureTitle, { color: theme.text }]}>
-                    3x Higher Purchase Intent
+                    Gamified Shopping Experience
                   </Text>
                   <Text style={[styles.featureDescription, { color: theme.icon }]}>
-                    Interactive ads drive shoppers to action
+                    Engage shoppers through interactive challenges and rewards
                   </Text>
                 </View>
               </View>
 
+              {/* Incentives Feature */}
               <View style={styles.featureItem}>
                 <LinearGradient
                   colors={[theme.success + '30', theme.success + '10']}
                   style={styles.featureIconBg}
                 >
-                  <Ionicons name="search" size={24} color={theme.success} />
+                  <Ionicons name="gift" size={24} color={theme.success} />
                 </LinearGradient>
                 <View style={styles.featureTextContainer}>
                   <Text style={[styles.featureTitle, { color: theme.text }]}>
-                    5x Better Product Discovery
+                    Earn as You Shop
                   </Text>
                   <Text style={[styles.featureDescription, { color: theme.icon }]}>
-                    Intelligent product matching increases relevance
+                    Attractive incentives encourage frequent interactions and purchases
                   </Text>
                 </View>
               </View>
 
+              {/* Eco-friendly AI Innovation Feature */}
               <View style={styles.featureItem}>
                 <LinearGradient
                   colors={[theme.warning + '30', theme.warning + '10']}
                   style={styles.featureIconBg}
                 >
-                  <Ionicons name="analytics" size={24} color={theme.warning} />
+                  <Ionicons name="leaf" size={24} color={theme.warning} />
                 </LinearGradient>
                 <View style={styles.featureTextContainer}>
                   <Text style={[styles.featureTitle, { color: theme.text }]}>
-                    Full Funnel Analytics
+                    Eco-Friendly AI Innovation
                   </Text>
                   <Text style={[styles.featureDescription, { color: theme.icon }]}>
-                    From ad view to purchase with detailed insights
+                    Sustainable, AI-driven recommendations for a greener future
                   </Text>
                 </View>
               </View>
             </View>
           </View>
 
+
           {/* Testimonial/social proof section */}
           <View style={styles.testimonialContainer}>
             <View style={[styles.testimonialCard, { backgroundColor: theme.cardBackground }]}>
               <Text style={[styles.testimonialText, { color: theme.text }]}>
-                "Adazon helped us increase our product sales by 247% and ROAS by 320%. The targeted ads reached exactly the right customers."
+                "Adazon helped us increase our product sales by 247% and ROAS by 320%. The innovative ads reached exactly the right customers."
               </Text>
               <View style={styles.testimonialAuthor}>
                 <View style={[styles.authorAvatar, { backgroundColor: theme.tint }]}>
                   <Text style={styles.authorInitials}>SJ</Text>
                 </View>
                 <View>
-                  <Text style={[styles.authorName, { color: theme.text }]}>Sarah Johnson</Text>
-                  <Text style={[styles.authorTitle, { color: theme.icon }]}>E-commerce Director, BrandCo</Text>
+                  <Text style={[styles.authorName, { color: theme.text }]}>Russell Motley</Text>
+                  <Text style={[styles.authorTitle, { color: theme.icon }]}>E-commerce Director, Genesis PCs</Text>
                 </View>
               </View>
             </View>
@@ -976,7 +700,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
         {/* Fixed CTA button at bottom */}
         <View style={styles.buttonContainer}>
           <AnimatedButton
-            text="Start Selling"
+            text="Start Earning"
             icon="cart"
             onPress={onContinue}
             color={theme.tint}
@@ -1088,7 +812,7 @@ const styles = StyleSheet.create({
   demoSection: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   demoContainer: {
     width: 200,

@@ -1,24 +1,54 @@
-# Adazon### **Project Name**  
+# Adazon
 **Adazon AI**  
 
-### **Challenge Statement(s) Addressed 🎯**  
-Optimize Amazon advertising through AI-driven automation, reducing costs while enhancing efficiency and sustainability.  
+### Challenge Statement
+Optimize Amazon advertising through AI-driven automation, reducing costs while enhancing efficiency and sustainability.
 
-### **Project Description 🤯**  
-Adazon AI revolutionizes Amazon advertising by leveraging real-time AI automation to **optimize ad targeting, adjust bids dynamically, and maximize ROI**. Unlike traditional ad platforms, our solution minimizes ad spend waste while ensuring maximum engagement. Additionally, we integrate a **user rewards system**, allowing Amazon users to earn points by engaging with ads. Adazon also prioritizes **sustainability**, utilizing **low-energy AI processing and carbon-conscious ad-serving** to reduce environmental impact.  
+### Project Description
+Adazon AI transforms Amazon advertising by leveraging real-time AI automation to **optimize ad targeting, dynamically adjust bids, and maximize ROI**. Unlike traditional platforms, our solution minimizes wasted ad spend while boosting engagement. Additionally, Adazon integrates a **user reward system**, allowing Amazon users to earn points through ad interactions. We also prioritize **sustainability**, utilizing **energy-efficient AI processing and carbon-conscious ad-serving** to reduce environmental impact.
 
-### **Project Value 💰**  
-Adazon AI addresses rising advertising costs and inefficiencies by providing **a smarter, more cost-effective solution** for businesses. With AI-driven ad placements and bid optimizations, brands **achieve better returns on investment** while reducing unnecessary spending. Our user reward system **enhances engagement** by incentivizing ad interactions, creating a win-win ecosystem for businesses and consumers. Additionally, our commitment to **eco-conscious advertising** ensures reduced energy consumption, making digital ads more sustainable.  
+### Project Value 
+Adazon AI addresses rising advertising costs and inefficiencies by providing businesses with a **smarter, cost-effective solution**. AI-driven ad placements and optimized bids help brands achieve **higher returns on investment** with reduced spending. Our user reward system **boosts engagement** by incentivizing interactions, creating a win-win ecosystem for businesses and consumers. Our commitment to **eco-conscious advertising** ensures lower energy usage, making digital ads more sustainable.
 
-### **Tech Overview 💻**  
-- OpenAI GPT for AI-driven ad optimization  
-- Amazon Ads API for seamless platform integration  
-- TensorFlow for predictive bid adjustments  
-- React for the user interface  
-- FastAPI for backend processing  
-- AWS Lambda & DynamoDB for scalable cloud infrastructure  
-- Docker for containerized deployment  
+### Tech Overview
+- **Docker** – Containerized deployment
+- **Expo Go (React)** – Cross-platform user interface
+- **FastAPI (Python)** – Backend processing and API integration
+- **Claude Sonnet API (Anthropic)** – Advanced chain-of-thought AI capabilities
+- **AWS Lambda** – Scalable cloud infrastructure *(planned)*
+- **Amazon Ads API** integration *(planned, future stage)*
 
+---
+
+## App Setup
+
+This mini-guide will help you run the Expo frontend and FastAPI backend seamlessly using Docker. Docker ensures consistent application performance across environments without dependency issues.
+
+### Setup Instructions
+
+#### Running the Expo App with Docker
+
+Use these commands to quickly set up and run your application:
+
+```bash
+# Build the Docker image
+docker build -t fmu-botb-hackathon .
+
+# Run the Docker container, forwarding the necessary ports
+docker run -it --rm \
+  -p 19000:19000 \  # Expo app runs here (access your app through browser or Expo client)
+  -p 19001:19001 \  # Expo DevTools (interface to manage your Expo app development)
+  -p 19002:19002 \  # Expo debug tools and QR code generator for easy app access
+  -p 8080:8000 \    # FastAPI Backend (API server for app data and logic)
+  fmu-botb-hackathon
+```
+
+After running these commands, you can access:
+
+- **Frontend (Expo)** at [http://localhost:19000](http://localhost:19000)  
+- **Backend API** at [http://localhost:8080](http://localhost:8080)
+
+---
 ### **Link to Video Pitch 📹**  
 ...point us to the short clip that tells us about your solution 😄  
 
@@ -34,7 +64,6 @@ Adazon AI addresses rising advertising costs and inefficiencies by providing **a
 
 ### **Project Checklist 🏁**  
 ✅ Presentation complete and linked  
-✅ Video pitch recorded and linked  
 ✅ Code merged to main branch  
 
 ### **School Name 🏫**  

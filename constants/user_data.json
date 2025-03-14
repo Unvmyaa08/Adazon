@@ -1,0 +1,59 @@
+{
+    "user_id": "nfl_micro_fan_123",
+    "username": "highlight_hunter",
+    "nfl_plus_subscriber": true,
+    "favorite_team": "Dallas Cowboys",
+    "location": {
+      "country": "US",
+      "state": "TX",
+      "city": "Dallas"
+    },
+    "interests": [
+      "NFL Highlights",
+      "Fantasy Football",
+      "Micro-Games",
+      "Sustainability"
+    ],
+    "amazon_product_context": {
+      "product_id": "B09NFLJERSEY",
+      "product_title": "Official NFL Team Jersey",
+      "product_url": "https://www.amazon.com/NFL-PRO-LINE-Buffalo-Player/dp/B08SJ7JJL2"
+    },
+    "watch_history": [
+      {
+        "clip_title": "Cowboys Training Camp Micro-Clip",
+        "watched_date": "2025-03-10",
+        "duration_seconds": 45
+      },
+      {
+        "clip_title": "Top 10 Plays of 2024 Season (Micro Edition)",
+        "watched_date": "2025-03-12",
+        "duration_seconds": 60
+      }
+    ],
+    "play_history": [
+      {
+        "game_title": "Red Zone Reaction (Micro-Game)",
+        "last_played": "2025-03-13",
+        "play_duration_seconds": 90,
+        "points_earned": 200
+      },
+      {
+        "game_title": "Field Goal Frenzy (Micro-Game)",
+        "last_played": "2025-03-08",
+        "play_duration_seconds": 120,
+        "high_score": 1500
+      }
+    ],
+    "preferred_ad_format": "video",
+    "device_info": {
+      "platform": "Android",
+      "app_version": "1.5.0",
+      "browser": "Chrome"
+    },
+    "session_info": {
+      "session_id": "session_001122",
+      "timestamp": "2025-03-13T12:30:00Z"
+    }
+  }
+  

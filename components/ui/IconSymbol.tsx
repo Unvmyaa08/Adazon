@@ -1,5 +1,4 @@
-// This file is a fallback for using MaterialIcons on Android and web.
-
+// IconSymbol.tsx
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolWeight } from 'expo-symbols';
 import React from 'react';
@@ -10,9 +9,14 @@ const MAPPING = {
   // See MaterialIcons here: https://icons.expo.fyi
   // See SF Symbols in the SF Symbols app on Mac.
   'house.fill': 'home',
+  'person.fill': 'person',
+  'cart.fill': 'shopping-cart',
+  'line.3.horizontal': 'menu',
+  'bubble.left.fill': 'chat',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],

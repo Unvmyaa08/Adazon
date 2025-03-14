@@ -50,6 +50,6 @@ Jamya Foster
 Jubalani Mzee
 Antonio Thomas 
 Amuari Stratford
-Tyla Bartlette  
+Tyla Bartlett
 
 

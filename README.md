@@ -1,13 +1,55 @@
-# Adazon
-Adazon: Revolutionizing Amazon Advertising with AI and Sustainability
-Adazon is an AI-driven advertising solution designed to optimize Amazon ads, making them more efficient, cost-effective, and environmentally conscious. As businesses struggle with rising ad costs and outdated manual strategies, Adazon leverages real-time AI automation to enhance targeting, adjust bids dynamically, and maximize ROI—without unnecessary spending.
+# Adazon### **Project Name**  
+**Adazon AI**  
 
-Key Benefits of Adazon:
+### **Challenge Statement(s) Addressed 🎯**  
+Optimize Amazon advertising through AI-driven automation, reducing costs while enhancing efficiency and sustainability.  
 
-✅ AI-Powered Optimization: Automates ad targeting and bid adjustments in real time for better performance.
-✅ User Engagement & Rewards: Integrates seamlessly with Amazon’s app, allowing users to earn points and rewards by watching ads.
-✅ Sustainable Advertising: Implements low-energy AI processing and a carbon-conscious ad-serving system to reduce environmental impact.
-✅ Scalability & Global Reach: Designed to scale operations globally, helping businesses reach high-growth markets.
+### **Project Description 🤯**  
+Adazon AI revolutionizes Amazon advertising by leveraging real-time AI automation to **optimize ad targeting, adjust bids dynamically, and maximize ROI**. Unlike traditional ad platforms, our solution minimizes ad spend waste while ensuring maximum engagement. Additionally, we integrate a **user rewards system**, allowing Amazon users to earn points by engaging with ads. Adazon also prioritizes **sustainability**, utilizing **low-energy AI processing and carbon-conscious ad-serving** to reduce environmental impact.  
 
-Competitive Advantage
-Compared to major ad platforms like Google Ads, Meta, and Criteo, Adazon offers a unique blend of AI automation, cost-efficiency, and sustainability, addressing key industry pain points. While competitors struggle with high costs, privacy concerns, or limited capabilities, Adazon provides an innovative and eco-conscious alternative for modern advertisers
+### **Project Value 💰**  
+Adazon AI addresses rising advertising costs and inefficiencies by providing **a smarter, more cost-effective solution** for businesses. With AI-driven ad placements and bid optimizations, brands **achieve better returns on investment** while reducing unnecessary spending. Our user reward system **enhances engagement** by incentivizing ad interactions, creating a win-win ecosystem for businesses and consumers. Additionally, our commitment to **eco-conscious advertising** ensures reduced energy consumption, making digital ads more sustainable.  
+
+### **Tech Overview 💻**  
+- OpenAI GPT for AI-driven ad optimization  
+- Amazon Ads API for seamless platform integration  
+- TensorFlow for predictive bid adjustments  
+- React for the user interface  
+- FastAPI for backend processing  
+- AWS Lambda & DynamoDB for scalable cloud infrastructure  
+- Docker for containerized deployment  
+
+### **Link to Video Pitch 📹**  
+...point us to the short clip that tells us about your solution 😄  
+
+### **Link to Demo Presentation 📽**  
+...point us to your PPT or Canva slides 😍  
+
+### **Team Checklist ✅**  
+✅ Team photo  
+✅ Team Slack channel  
+✅ Communication established with mentor  
+✅ Repo creation from this template  
+✅ Hangar registration  
+
+### **Project Checklist 🏁**  
+✅ Presentation complete and linked  
+✅ Video pitch recorded and linked  
+✅ Code merged to main branch  
+
+### **School Name 🏫**  
+Florida Memorial University   
+
+### **Team Name 🏷**  
+LionsBytes  
+
+### **✨ Contributors ✨**  
+...tell the world who you and your team are 🙂  
+
+Jamya Foster 
+Jubalani Mzee
+Antonio Thomas 
+Aumari Stratford
+Tyla Bartlette  
+
+

@@ -49,7 +49,7 @@ LionsBytes
 Jamya Foster 
 Jubalani Mzee
 Antonio Thomas 
-Aumari Stratford
+Amuari Stratford
 Tyla Bartlette  
 
 
